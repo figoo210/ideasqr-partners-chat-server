@@ -4,6 +4,10 @@ from sqlalchemy.orm import sessionmaker, Session
 from sqlalchemy import create_engine
 from passlib.context import CryptContext
 from databases import Database
+from dotenv import load_dotenv
+import os
+
+load_dotenv()
 
 # Auth
 SECRET_KEY = "mysecretkey"
@@ -16,7 +20,7 @@ oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 
 
 # Database
-SQLALCHEMY_DATABASE_URL = "mysql+pymysql://admin:M$2023Python@localhost:3306/PartnersChatAppDB"
+SQLALCHEMY_DATABASE_URL = f"mysql+pymysql://{os.environ.get('DB_USERNAME')}:{os.environ.get('DB_PASSWORD')}@localhost:3306/PartnersChatAppDB"
 
 database = Database(SQLALCHEMY_DATABASE_URL)
 engine = create_engine(SQLALCHEMY_DATABASE_URL)

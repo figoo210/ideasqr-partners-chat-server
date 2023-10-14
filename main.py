@@ -1,3 +1,4 @@
+from pathlib import Path
 from fastapi import FastAPI
 from fastapi.openapi.docs import get_swagger_ui_html
 from fastapi.openapi.utils import get_openapi
@@ -13,7 +14,7 @@ Base.metadata.create_all(bind=engine)
 origins = [
     "http://localhost",
     "http://localhost:3000",  # Replace with your React app's URL
-    "https://chat.altajer.org"
+    "https://chat.altajer.org",
 ]
 
 app.add_middleware(
@@ -58,4 +59,4 @@ app.include_router(websocket.router)
 if __name__ == "__main__":
     import uvicorn
 
-    uvicorn.run(app, host="0.0.0.0", port=8000)
+    uvicorn.run(f"{Path(__file__).stem}:app", host="0.0.0.0", port=8000, reload=True)
