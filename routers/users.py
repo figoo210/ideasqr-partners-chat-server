@@ -79,11 +79,11 @@ def update_user(user_id: int, user: schemas.UserUpdate, db: Session = Depends(ge
     db_user = db.query(models.User).filter(models.User.id == user_id).first()
     if not db_user:
         raise HTTPException(status_code=404, detail="User not found")
-    db_user.email = user.email
-    db_user.password = get_password_hash(user.password)
-    db_user.name = user.name
-    db_user.image_url = user.image_url
-    db_user.role_name = user.role_name
+    db_user.email = user.email if len(user.email) > 0 else db_user.email
+    db_user.password = get_password_hash(user.password) if len(user.password) > 0 else db_user.password
+    db_user.name = user.name if len(user.name) > 0 else db_user.name
+    db_user.image_url = user.image_url if len(user.image_url) > 0 else db_user.image_url
+    db_user.role_name = user.role_name if len(user.role_name) > 0 else db_user.role_name
     db_user.last_modified_at = datetime.now()
     db.commit()
     db.refresh(db_user)

@@ -2,7 +2,7 @@ from pathlib import Path
 from fastapi import FastAPI
 from fastapi.openapi.docs import get_swagger_ui_html
 from fastapi.openapi.utils import get_openapi
-from routers import roles_permissions, users, chats, messages, reactions, websocket
+from routers import roles_permissions, users, chats, messages, reactions, websocket, ip_groups
 from config import Base, database, engine
 from fastapi.middleware.cors import CORSMiddleware
 
@@ -53,6 +53,7 @@ app.include_router(chats.router)
 app.include_router(messages.router)
 app.include_router(reactions.router)
 app.include_router(websocket.router)
+app.include_router(ip_groups.router)
 
 
 # Run

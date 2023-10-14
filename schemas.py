@@ -38,7 +38,7 @@ class TokenData(BaseModel):
 class IPGroupBase(BaseModel):
     ip: str
     name: str
-    users: Optional[List[User]] = None
+    users: Optional[List[int]] = None
 
 
 class RoleBase(BaseModel):
@@ -72,7 +72,7 @@ class Role(RoleBase):
 
 class RolePermission(BaseModel):
     role: str
-    permission: str
+    permissions: List[str]
 
 
 class RolePermissionResponse(BaseModel):

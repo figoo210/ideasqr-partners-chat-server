@@ -10,32 +10,40 @@ router = APIRouter()
 
 
 # API endpoint to create a role permission
-@router.post("/role_permission/", response_model=schemas.RolePermission)
+@router.post("/role_permissions/", response_model=List[schemas.Role])
 def create_role_permission(
     role_permission: schemas.RolePermission, db: Session = Depends(get_db)
 ):
-    # Check if role permission already exists
-    existing = (
-        db.query(models.RolePermission)
-        .filter(models.RolePermission.role == role_permission.role)
-        .filter(models.RolePermission.permission == role_permission.permission)
-        .first()
-    )
+    # Loop over permissions array
+    for permission in role_permission.permissions:
+        # Delete existing permissions not in the array
+        db.query(models.RolePermission) \
+            .filter(models.RolePermission.role == role_permission.role) \
+            .filter(models.RolePermission.permission.notin_(role_permission.permissions)) \
+            .delete(synchronize_session=False)
 
-    if existing:
-        return existing
+        # Check if permission exists for the role
+        existing_permission = db.query(models.RolePermission) \
+            .filter(models.RolePermission.role == role_permission.role) \
+            .filter(models.RolePermission.permission == permission) \
+            .first()
 
-    # Create a new RolePermission object
-    new_role_permission = models.RolePermission(
-        role=role_permission.role, permission=role_permission.permission
-    )
+        if existing_permission:
+            continue  # Skip if permission already exists for the role
 
-    # Add the new role permission to the database
-    db.add(new_role_permission)
-    db.commit()
-    db.refresh(new_role_permission)
+        # Create new role permission
+        new_role_permission = models.RolePermission(
+            role=role_permission.role,
+            permission=permission
+        )
+        db.add(new_role_permission)
 
-    return new_role_permission
+        db.commit()
+        db.refresh(new_role_permission)
+
+    roles = db.query(models.Role).all()
+    return roles
+
 
 
 @router.get("/role_permissions/", response_model=schemas.RolePermissionResponse)
