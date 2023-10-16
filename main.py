@@ -15,6 +15,7 @@ origins = [
     "http://localhost",
     "http://localhost:3000",  # Replace with your React app's URL
     "https://chat.altajer.org",
+    "http://172.234.72.69:3000",
 ]
 
 app.add_middleware(
