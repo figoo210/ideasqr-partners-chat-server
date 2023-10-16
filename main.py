@@ -2,7 +2,15 @@ from pathlib import Path
 from fastapi import FastAPI
 from fastapi.openapi.docs import get_swagger_ui_html
 from fastapi.openapi.utils import get_openapi
-from routers import roles_permissions, users, chats, messages, reactions, websocket, ip_groups
+from routers import (
+    roles_permissions,
+    users,
+    chats,
+    messages,
+    reactions,
+    websocket,
+    ip_groups,
+)
 from config import Base, database, engine
 from fastapi.middleware.cors import CORSMiddleware
 
@@ -16,6 +24,7 @@ origins = [
     "http://localhost:3000",  # Replace with your React app's URL
     "https://chat.altajer.org",
     "http://172.234.72.69:3000",
+    "http://192.168.1.18:3000",
 ]
 
 app.add_middleware(
