@@ -10,6 +10,7 @@ router = APIRouter()
 
 # IP Groups Endpoints
 
+
 @router.post("/ip_groups")
 def create_ip_group(ip_group: schemas.IPGroupBase, db: Session = Depends(get_db)):
     try:
@@ -18,7 +19,7 @@ def create_ip_group(ip_group: schemas.IPGroupBase, db: Session = Depends(get_db)
         db.commit()
         db.refresh(new_ip_group)
         return {"message": "IP Group created successfully"}
-    except SQLAlchemyError:
+    except:
         db.rollback()
         return {"message": "Failed to create IP Group"}
 
@@ -30,8 +31,14 @@ def get_ip_groups(db: Session = Depends(get_db)):
 
 
 @router.put("/ip_groups")
-def update_ip_group(updated_ip_group: schemas.IPGroupBase, db: Session = Depends(get_db)):
-    ip_group = db.query(models.IPGroup).filter(models.IPGroup.ip == updated_ip_group.ip).first()
+def update_ip_group(
+    updated_ip_group: schemas.IPGroupBase, db: Session = Depends(get_db)
+):
+    ip_group = (
+        db.query(models.IPGroup)
+        .filter(models.IPGroup.ip == updated_ip_group.ip)
+        .first()
+    )
     if ip_group:
         ip_group.name = updated_ip_group.name
         db.commit()
@@ -50,4 +57,3 @@ def delete_ip_group(ip: str, db: Session = Depends(get_db)):
         return {"message": "IP Group deleted successfully"}
     else:
         return {"message": "IP Group not found"}
-

@@ -37,7 +37,10 @@ class ConnectionManager:
 
     async def send_dict(self, data: dict):
         for connection in self.active_connections:
-            await connection.send_json(data)
+            try:
+                await connection.send_json(data)
+            except WebSocketDisconnect:
+                self.active_connections.remove(connection)
 
 
 manager = ConnectionManager()
@@ -52,7 +55,9 @@ async def websocket_endpoint(websocket: WebSocket, db: Session = Depends(get_db)
     try:
         while True:
             data = await websocket.receive_json()
+            print("################################ Data: ", data)
             message = schemas.MessageBase(**data)
+            print("################################ Message: ", message)
             db_message = models.Message(
                 chat_id=message.chat_id,
                 sender_id=message.sender_id,
@@ -72,5 +77,6 @@ async def websocket_endpoint(websocket: WebSocket, db: Session = Depends(get_db)
             await manager.send_dict(json.dumps(msg, cls=CustomJSONEncoder))
 
     except WebSocketDisconnect:
+        print("################### DISCONNECT #####################")
         manager.disconnect(websocket)
         # await manager.broadcast(json.dumps(message))
