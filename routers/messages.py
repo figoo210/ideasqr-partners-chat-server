@@ -19,8 +19,7 @@ def create_message(message: schemas.MessageBase, db: Session = Depends(get_db)):
         parent_message_id=message.parent_message_id,
         timestamp=datetime.now(),
         message=message.message,
-        is_audio=message.is_audio or False,
-        is_image=message.is_image or False,
+        seen=message.seen or False,
         is_file=message.is_file or False,
         created_at=datetime.now(),
         last_modified_at=datetime.now(),
@@ -37,12 +36,12 @@ def get_messages(skip: int = 0, limit: int = 100, db: Session = Depends(get_db))
     return messages
 
 
-@router.get("/messages/{message_id}", response_model=schemas.Message)
-def get_message(message_id: int, db: Session = Depends(get_db)):
-    message = db.query(models.Message).filter(models.Message.id == message_id).first()
-    if not message:
-        raise HTTPException(status_code=404, detail="Message not found")
-    return message
+# @router.get("/messages/{message_id}", response_model=schemas.Message)
+# def get_message(message_id: int, db: Session = Depends(get_db)):
+#     message = db.query(models.Message).filter(models.Message.id == message_id).first()
+#     if not message:
+#         raise HTTPException(status_code=404, detail="Message not found")
+#     return message
 
 
 @router.put("/messages/{message_id}", response_model=schemas.Message)
@@ -58,8 +57,7 @@ def update_message(
     db_message.sender_id = message.sender_id
     db_message.timestamp = datetime.now()
     db_message.message = message.message
-    db_message.is_audio = message.is_audio
-    db_message.is_image = message.is_image
+    db_message.seen = message.seen
     db_message.is_file = message.is_file
     db_message.last_modified_at = datetime.now()
     db.commit()
@@ -77,3 +75,16 @@ def delete_message(message_id: int, db: Session = Depends(get_db)):
     db.delete(db_message)
     db.commit()
     return {"message": "Message deleted"}
+
+
+@router.get("/messages/{message_id}")
+def seen_message(message_id: int, db: Session = Depends(get_db)):
+    db_message = (
+        db.query(models.Message).filter(models.Message.id == message_id).first()
+    )
+    if not db_message:
+        raise HTTPException(status_code=404, detail="Message not found")
+    db_message.seen = True
+    db.commit()
+    db.refresh(db_message)
+    return {"message": "Message Seen"}

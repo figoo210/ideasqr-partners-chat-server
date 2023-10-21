@@ -121,8 +121,7 @@ class MessageBase(BaseModel):
     parent_message_id: Optional[int] = None
     timestamp: Optional[datetime] = None
     message: str
-    is_audio: Optional[bool] = None
-    is_image: Optional[bool] = None
+    seen: Optional[bool] = None
     is_file: Optional[bool] = None
 
 

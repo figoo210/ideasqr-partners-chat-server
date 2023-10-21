@@ -39,7 +39,8 @@ class ConnectionManager:
         for connection in self.active_connections:
             try:
                 await connection.send_json(data)
-            except WebSocketDisconnect:
+            except WebSocketDisconnect as e:
+                print("############################## E: ", e)
                 self.active_connections.remove(connection)
 
 
@@ -64,8 +65,7 @@ async def websocket_endpoint(websocket: WebSocket, db: Session = Depends(get_db)
                 parent_message_id=message.parent_message_id,
                 timestamp=datetime.now(),
                 message=message.message,
-                is_audio=message.is_audio or False,
-                is_image=message.is_image or False,
+                seen=message.seen or False,
                 is_file=message.is_file or False,
                 created_at=datetime.now(),
                 last_modified_at=datetime.now(),
