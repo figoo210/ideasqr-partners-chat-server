@@ -18,6 +18,12 @@ def create_ip_group(ip_group: schemas.IPGroupBase, db: Session = Depends(get_db)
         db.add(new_ip_group)
         db.commit()
         db.refresh(new_ip_group)
+        if len(ip_group.users) > 0:
+            for user_id in ip_group.users:
+                user = db.query(models.User).filter(models.User.id == user_id).first()
+                user.ip_group_id = ip_group.ip
+                db.commit()
+                db.refresh(user)
         return {"message": "IP Group created successfully"}
     except:
         db.rollback()

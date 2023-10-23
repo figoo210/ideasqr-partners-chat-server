@@ -50,33 +50,51 @@ manager = ConnectionManager()
 @router.websocket("/ws/chats")
 async def websocket_endpoint(websocket: WebSocket, db: Session = Depends(get_db)):
     await manager.connect(websocket)
-    now = datetime.now()
-    current_time = now.strftime("%H:%M")
 
     try:
         while True:
             data = await websocket.receive_json()
-            print("################################ Data: ", data)
-            message = schemas.MessageBase(**data)
-            print("################################ Message: ", message)
-            db_message = models.Message(
-                chat_id=message.chat_id,
-                sender_id=message.sender_id,
-                parent_message_id=message.parent_message_id,
-                timestamp=datetime.now(),
-                message=message.message,
-                seen=message.seen or False,
-                is_file=message.is_file or False,
-                created_at=datetime.now(),
-                last_modified_at=datetime.now(),
-            )
-            db.add(db_message)
-            db.commit()
-            db.refresh(db_message)
-            msg = schemas.Message.from_orm(db_message).dict()
-            await manager.send_dict(json.dumps(msg, cls=CustomJSONEncoder))
+            print("################################ Chats Data: ", data)
+            if data == "reaction":
+                await manager.send_dict(
+                    json.dumps({"reaction": True}, cls=CustomJSONEncoder)
+                )
+            else:
+                message = schemas.MessageBase(**data)
+                db_message = models.Message(
+                    chat_id=message.chat_id,
+                    sender_id=message.sender_id,
+                    parent_message_id=message.parent_message_id,
+                    timestamp=datetime.now(),
+                    message=message.message,
+                    seen=message.seen or False,
+                    is_file=message.is_file or False,
+                    created_at=datetime.now(),
+                    last_modified_at=datetime.now(),
+                )
+                db.add(db_message)
+                db.commit()
+                db.refresh(db_message)
+                msg = schemas.Message.from_orm(db_message).dict()
+                await manager.send_dict(json.dumps(msg, cls=CustomJSONEncoder))
 
     except WebSocketDisconnect:
-        print("################### DISCONNECT #####################")
+        print("################### Chats DISCONNECT #####################")
+        manager.disconnect(websocket)
+        # await manager.broadcast(json.dumps(message))
+
+
+@router.websocket("/ws/calls")
+async def websocket_endpoint_calls(websocket: WebSocket, db: Session = Depends(get_db)):
+    await manager.connect(websocket)
+
+    try:
+        while True:
+            data = await websocket.receive_json()
+            print("################################ Calls Data: ", data)
+            await manager.send_dict(json.dumps(data, cls=CustomJSONEncoder))
+
+    except WebSocketDisconnect:
+        print("################### Calls DISCONNECT #####################")
         manager.disconnect(websocket)
         # await manager.broadcast(json.dumps(message))

@@ -25,12 +25,6 @@ class User(UserBase):
     image_url: Optional[str] = None
 
 
-class Token(BaseModel):
-    access_token: str
-    token_type: str
-    data: User
-
-
 class TokenData(BaseModel):
     email: Optional[str] = None
 
@@ -68,6 +62,13 @@ class Role(RoleBase):
     created_at: datetime
     last_modified_at: datetime
     permissions: Optional[List[Permission]] = None
+
+
+class Token(BaseModel):
+    access_token: str
+    token_type: str
+    data: User
+    role: Role
 
 
 class RolePermission(BaseModel):

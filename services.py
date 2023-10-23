@@ -1,5 +1,6 @@
 from typing import Optional
 from fastapi import Depends, HTTPException
+from sqlalchemy.orm import Session
 from models import User
 from config import ALGORITHM, SECRET_KEY, get_db, pwd_context, oauth2_scheme
 from datetime import datetime, timedelta
@@ -14,12 +15,12 @@ def get_password_hash(password):
     return pwd_context.hash(password)
 
 
-def get_user(db, email: str):
+def get_user(email: str, db: Session = Depends(get_db)):
     return db.query(User).filter(User.email == email).first()
 
 
 def authenticate_user(db, email: str, password: str):
-    user = get_user(db, email)
+    user = get_user(email, db)
     if not user:
         return False
     if not verify_password(password, user.password):

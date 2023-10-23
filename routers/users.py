@@ -35,19 +35,35 @@ async def login_for_access_token(
     access_token = create_access_token(
         data={"sub": user.email}, expires_delta=access_token_expires
     )
+
+    role = db.query(models.Role).filter(models.Role.role == user.role_name).first()
     resp = {
         "access_token": access_token,
         "token_type": "bearer",
         "data": user,
+        "role": role,
     }
     return resp
 
 
-@router.get("/users/me/", response_model=schemas.User)
-async def read_users_me(
-    current_user: models.User = Depends(get_current_active_user),
-):
-    return current_user
+@router.get("/users/me/{id}", response_model=schemas.Token)
+async def read_users_me(id: str, db: Session = Depends(get_db)):
+    current_user = db.quiry(models.User).filter(models.User.id == id).first()
+    access_token_expires = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
+    access_token = create_access_token(
+        data={"sub": current_user.email}, expires_delta=access_token_expires
+    )
+
+    role = (
+        db.query(models.Role).filter(models.Role.role == current_user.role_name).first()
+    )
+    resp = {
+        "access_token": access_token,
+        "token_type": "bearer",
+        "data": current_user,
+        "role": role,
+    }
+    return resp
 
 
 @router.post("/users", response_model=schemas.User)
@@ -80,7 +96,9 @@ def update_user(user_id: int, user: schemas.UserUpdate, db: Session = Depends(ge
     if not db_user:
         raise HTTPException(status_code=404, detail="User not found")
     db_user.email = user.email if len(user.email) > 0 else db_user.email
-    db_user.password = get_password_hash(user.password) if len(user.password) > 0 else db_user.password
+    db_user.password = (
+        get_password_hash(user.password) if len(user.password) > 0 else db_user.password
+    )
     db_user.name = user.name if len(user.name) > 0 else db_user.name
     db_user.image_url = user.image_url if len(user.image_url) > 0 else db_user.image_url
     db_user.role_name = user.role_name if len(user.role_name) > 0 else db_user.role_name

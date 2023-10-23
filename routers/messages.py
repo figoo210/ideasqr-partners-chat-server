@@ -36,12 +36,12 @@ def get_messages(skip: int = 0, limit: int = 100, db: Session = Depends(get_db))
     return messages
 
 
-# @router.get("/messages/{message_id}", response_model=schemas.Message)
-# def get_message(message_id: int, db: Session = Depends(get_db)):
-#     message = db.query(models.Message).filter(models.Message.id == message_id).first()
-#     if not message:
-#         raise HTTPException(status_code=404, detail="Message not found")
-#     return message
+@router.get("/chat/messages/{chat_id}", response_model=List[schemas.Message])
+def get_message(chat_id: str, db: Session = Depends(get_db)):
+    messages = db.query(models.Message).filter(models.Message.chat_id == chat_id).all()
+    if not messages or len(messages) == 0:
+        raise HTTPException(status_code=404, detail="Message not found")
+    return messages
 
 
 @router.put("/messages/{message_id}", response_model=schemas.Message)
