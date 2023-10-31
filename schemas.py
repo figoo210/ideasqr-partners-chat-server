@@ -141,6 +141,9 @@ class MessageReaction(MessageReactionBase):
     created_at: datetime
     last_modified_at: datetime
 
+    class Config:
+        from_attributes = True
+
 
 class Message(MessageBase):
     id: int

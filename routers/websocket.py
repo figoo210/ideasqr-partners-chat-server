@@ -14,6 +14,9 @@ class CustomJSONEncoder(json.JSONEncoder):
     def default(self, obj):
         if isinstance(obj, datetime):
             return obj.isoformat()
+        if isinstance(obj.__class__, models.MessageReaction):
+            # If the object is a SQLAlchemy ORM object, convert it to a dictionary
+            return obj.__dict__
         return super().default(obj)
 
 
@@ -55,10 +58,8 @@ async def websocket_endpoint(websocket: WebSocket, db: Session = Depends(get_db)
         while True:
             data = await websocket.receive_json()
             print("################################ Chats Data: ", data)
-            if data == "reaction":
-                await manager.send_dict(
-                    json.dumps({"reaction": True}, cls=CustomJSONEncoder)
-                )
+            if "reaction" in data:
+                await manager.send_dict(json.dumps({"reaction": data["reaction"], "chat_id": data["chat_id"]}, cls=CustomJSONEncoder))
             else:
                 message = schemas.MessageBase(**data)
                 db_message = models.Message(
