@@ -1,8 +1,9 @@
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Request
 from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy.orm import Session
 from typing import List
 from datetime import datetime, timedelta
+import requests
 
 import models, schemas
 from config import ACCESS_TOKEN_EXPIRE_MINUTES, get_db
@@ -21,9 +22,17 @@ router = APIRouter()
 
 @router.post("/token", response_model=schemas.Token)
 async def login_for_access_token(
+    request: Request,
     form_data: OAuth2PasswordRequestForm = Depends(),
     db: Session = Depends(get_db),
 ):
+    forwarded_for = request.headers.get("X-User-IP")
+    if forwarded_for:
+        user_ip = forwarded_for
+    else:
+        user_ip = request.client.host
+    print("################################# user_ip: ", user_ip)
+
     user = authenticate_user(db, form_data.username, form_data.password)
     if not user:
         raise HTTPException(
@@ -31,6 +40,14 @@ async def login_for_access_token(
             detail="Incorrect Email or password",
             headers={"WWW-Authenticate": "Bearer"},
         )
+    if user.ip_group_id and len(user.ip_group_id) > 0:
+        if user.ip_group_id != user_ip:
+            raise HTTPException(
+                status_code=401,
+                detail="You are logging in from unallowed IP.",
+                headers={"WWW-Authenticate": "Bearer"},
+            )
+
     access_token_expires = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
     access_token = create_access_token(
         data={"sub": user.email}, expires_delta=access_token_expires
