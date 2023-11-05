@@ -41,7 +41,7 @@ def create_chat(chat: schemas.ChatCreate, db: Session = Depends(get_db)):
 
 @router.get("/chats/", response_model=List[schemas.Chat])
 def get_chats(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
-    chats = db.query(models.Chat).offset(skip).limit(limit).all()
+    chats = db.query(models.Chat).all()
     return chats
 
 
