@@ -60,6 +60,12 @@ async def websocket_endpoint(websocket: WebSocket, db: Session = Depends(get_db)
             print("################################ Chats Data: ", data)
             if "reaction" in data:
                 await manager.send_dict(json.dumps({"reaction": data["reaction"], "chat_id": data["chat_id"]}, cls=CustomJSONEncoder))
+            elif "edit" in data:
+                response = {
+                    **data["edit"],
+                    "edit": "edit"
+                }
+                await manager.send_dict(json.dumps(response, cls=CustomJSONEncoder))
             else:
                 message = schemas.MessageBase(**data)
                 db_message = models.Message(

@@ -32,6 +32,7 @@ class User(Base, ModelActions):
     messages = relationship("Message", back_populates="sender")
     message_reactions = relationship("MessageReaction", back_populates="user")
     ip_group = relationship("IPGroup", back_populates="users")
+    reply_shortcuts = relationship("ReplyShortcut", back_populates="user", cascade="all, delete-orphan")
 
 
 # IP Group model
@@ -133,3 +134,16 @@ class MessageReaction(Base, ModelActions):
 
     message = relationship("Message", back_populates="reactions")
     user = relationship("User", back_populates="message_reactions")
+
+
+class ReplyShortcut(Base):
+    __tablename__ = "reply_shortcuts"
+
+    id = Column(Integer, primary_key=True, index=True)
+    shortcut = Column(String(255), index=True)
+    reply = Column(String(length=5000), nullable=True)
+    user_id = Column(Integer, ForeignKey("users.id"))
+
+    # Define a relationship with the User model
+    user = relationship("User", back_populates="reply_shortcuts")
+

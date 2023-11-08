@@ -3,6 +3,17 @@ from pydantic import BaseModel
 from datetime import datetime
 
 
+
+class ReplyShortcut(BaseModel):
+    id: Optional[int] = None
+    shortcut: Optional[str] = None
+    reply: Optional[str] = None
+
+
+class ReplyShortcutList(BaseModel):
+    shortcuts: List[ReplyShortcut]
+
+
 class UserBase(BaseModel):
     email: str
     name: str
@@ -23,6 +34,7 @@ class User(UserBase):
     created_at: datetime
     last_modified_at: datetime
     image_url: Optional[str] = None
+    reply_shortcuts: Optional[List[ReplyShortcut]] = None
 
 
 class TokenData(BaseModel):
@@ -182,7 +194,7 @@ class ChatUpdate(ChatBase):
 
 
 class MessageUpdate(MessageBase):
-    id: int
+    pass
 
 
 class MessageReactionUpdate(MessageReactionBase):

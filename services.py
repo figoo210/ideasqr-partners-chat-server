@@ -1,7 +1,7 @@
 from typing import Optional
 from fastapi import Depends, HTTPException
 from sqlalchemy.orm import Session
-from models import User
+from models import User, ReplyShortcut
 from config import ALGORITHM, SECRET_KEY, get_db, pwd_context, oauth2_scheme
 from datetime import datetime, timedelta
 import jwt
@@ -62,3 +62,34 @@ async def get_current_active_user(current_user: User = Depends(get_current_user)
     if current_user.disabled:
         raise HTTPException(status_code=400, detail="Inactive user")
     return current_user
+
+
+
+def create_default_reply_shortcuts(user):
+    default_shortcuts = [
+        ("Ctrl+1", ""),
+        ("Ctrl+2", ""),
+        ("Ctrl+3", ""),
+        ("Ctrl+4", ""),
+        ("Ctrl+5", ""),
+        ("Ctrl+6", ""),
+        ("Ctrl+7", ""),
+        ("Ctrl+8", ""),
+        ("Ctrl+9", ""),
+    ]
+
+    default_reply_shortcuts = [ReplyShortcut(shortcut=shortcut, reply=reply, user=user) for shortcut, reply in default_shortcuts]
+
+    return default_reply_shortcuts
+
+
+def ensure_default_reply_shortcuts_for_all_users(db):
+    users = db.query(User).all()
+    for user in users:
+        # Check if the user has no reply shortcuts
+        if not user.reply_shortcuts:
+            # If no reply shortcuts, create and associate the default reply shortcuts
+            default_reply_shortcuts = create_default_reply_shortcuts(user)
+            user.reply_shortcuts = default_reply_shortcuts
+
+    db.commit()

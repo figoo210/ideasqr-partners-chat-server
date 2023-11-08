@@ -12,6 +12,7 @@ from services import (
     create_access_token,
     get_current_active_user,
     get_password_hash,
+    create_default_reply_shortcuts,
 )
 
 router = APIRouter()
@@ -31,7 +32,6 @@ async def login_for_access_token(
         user_ip = forwarded_for
     else:
         user_ip = request.client.host
-    print("################################# user_ip: ", user_ip)
 
     user = authenticate_user(db, form_data.username, form_data.password)
     if not user:
@@ -87,6 +87,8 @@ async def read_users_me(id: str, db: Session = Depends(get_db)):
 async def create_user(user: schemas.UserCreate, db: Session = Depends(get_db)):
     db_user = models.User(**user.dict())
     db_user.password = get_password_hash(db_user.password)
+    default_reply_shortcuts = create_default_reply_shortcuts(db_user)
+    db_user.reply_shortcuts = default_reply_shortcuts
     db.add(db_user)
     db.commit()
     db.refresh(db_user)
@@ -133,3 +135,12 @@ def delete_user(user_id: int, db: Session = Depends(get_db)):
     db.delete(db_user)
     db.commit()
     return {"message": "User deleted"}
+
+
+@router.put("/reply_shortcuts/{id}")
+def update_reply_shortcuts(id: int, reply_shortcut: schemas.ReplyShortcut, db: Session = Depends(get_db)):
+    shortcut = db.query(models.ReplyShortcut).get(id)
+    shortcut.reply = reply_shortcut.reply
+    db.commit()
+    return shortcut
+
