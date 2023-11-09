@@ -105,7 +105,7 @@ async def read_user(id: str, db: Session = Depends(get_db)):
 
 @router.get("/users/", response_model=List[schemas.User])
 def get_users(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
-    users = db.query(models.User).offset(skip).limit(limit).all()
+    users = db.query(models.User).offset(skip).all()
     return users
 
 
