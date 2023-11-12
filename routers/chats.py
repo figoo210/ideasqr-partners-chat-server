@@ -77,3 +77,31 @@ def delete_chat(chat_name: str, db: Session = Depends(get_db)):
     db.delete(db_chat)
     db.commit()
     return {"message": "Chat deleted"}
+
+
+@router.post("/update-chat-members")
+def update_chat_members(request: schemas.ChatMemberUpdate, db: Session = Depends(get_db)):
+    try:
+        chat = db.query(models.Chat).filter_by(chat_name=request.chat_id).first()
+
+        if chat:
+            # Delete members not in the new list
+            db.query(models.ChatMember).filter(models.ChatMember.chat_id == chat.chat_name, ~models.ChatMember.user_id.in_(request.user_ids)).delete(synchronize_session=False)
+
+            # Add new members
+            for user_id in request.user_ids:
+                user = db.query(models.User).filter_by(id=user_id).first()
+
+                if user:
+                    # Check if the user is not already a member
+                    existing_member = db.query(models.ChatMember).filter_by(chat_id=chat.chat_name, user_id=user.id).first()
+                    if not existing_member:
+                        chat_member = models.ChatMember(chat_id=chat.chat_name, user_id=user.id, joined_at=datetime.now())
+                        db.add(chat_member)
+            db.commit()
+            return {"message": "Chat members updated successfully.", "chat_members": chat.chat_members}
+        else:
+            raise HTTPException(status_code=404, detail="Chat not found.")
+
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))

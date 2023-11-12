@@ -66,6 +66,8 @@ async def websocket_endpoint(websocket: WebSocket, db: Session = Depends(get_db)
                     "edit": "edit"
                 }
                 await manager.send_dict(json.dumps(response, cls=CustomJSONEncoder))
+            elif "update_chat_members" in data:
+                await manager.send_dict(json.dumps(data, cls=CustomJSONEncoder))
             else:
                 message = schemas.MessageBase(**data)
                 db_message = models.Message(

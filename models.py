@@ -19,7 +19,7 @@ class User(Base, ModelActions):
     email = Column(String(length=100), unique=True, index=True)
     password = Column(String(length=100))
     name = Column(String(length=100))
-    image_url = Column(String(length=200), nullable=True)
+    image_url = Column(String(length=2000), nullable=True)
     role_name = Column(String(length=50), ForeignKey("roles.role"), nullable=False)
     disabled = Column(Boolean, default=False)
     created_at = Column(DateTime, default=func.now())

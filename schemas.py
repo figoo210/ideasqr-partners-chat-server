@@ -113,7 +113,7 @@ class ChatMemberCreate(ChatMemberBase):
 
 class ChatMemberUpdate(BaseModel):
     chat_id: Optional[str]
-    user_id: Optional[int]
+    user_ids: Optional[List[int]]
 
 
 class ChatMemberResponse(BaseModel):
