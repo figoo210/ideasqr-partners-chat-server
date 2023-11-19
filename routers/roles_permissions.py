@@ -14,14 +14,15 @@ router = APIRouter()
 def create_role_permission(
     role_permission: schemas.RolePermission, db: Session = Depends(get_db)
 ):
+    print("#################### role_permission: ", role_permission)
+    # Delete existing permissions not in the array
+    db.query(models.RolePermission) \
+        .filter(models.RolePermission.role == role_permission.role) \
+        .filter(models.RolePermission.permission.notin_(role_permission.permissions)) \
+        .delete(synchronize_session=False)
+    db.commit()
     # Loop over permissions array
     for permission in role_permission.permissions:
-        # Delete existing permissions not in the array
-        db.query(models.RolePermission) \
-            .filter(models.RolePermission.role == role_permission.role) \
-            .filter(models.RolePermission.permission.notin_(role_permission.permissions)) \
-            .delete(synchronize_session=False)
-
         # Check if permission exists for the role
         existing_permission = db.query(models.RolePermission) \
             .filter(models.RolePermission.role == role_permission.role) \
