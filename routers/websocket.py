@@ -4,10 +4,34 @@ from sqlalchemy.orm import Session
 from typing import List
 from datetime import datetime
 
-from config import get_db
+from config import get_db, SessionLocal
 import models, schemas
 
 router = APIRouter()
+
+
+def add_new_message(message):
+    db = SessionLocal()
+    db_message = models.Message(
+        chat_id=message.chat_id,
+        sender_id=message.sender_id,
+        parent_message_id=message.parent_message_id,
+        timestamp=datetime.now(),
+        message=message.message,
+        seen=message.seen or False,
+        is_file=message.is_file or False,
+        created_at=datetime.now(),
+        last_modified_at=datetime.now(),
+    )
+    try:
+        db.add(db_message)
+        db.commit()
+        db.refresh(db_message)
+        db_message.reactions
+        return db_message
+    finally:
+        db.close()
+
 
 
 class CustomJSONEncoder(json.JSONEncoder):
@@ -51,7 +75,7 @@ manager = ConnectionManager()
 
 
 @router.websocket("/ws/chats")
-async def websocket_endpoint(websocket: WebSocket, db: Session = Depends(get_db)):
+async def websocket_endpoint(websocket: WebSocket):
     await manager.connect(websocket)
 
     try:
@@ -70,20 +94,7 @@ async def websocket_endpoint(websocket: WebSocket, db: Session = Depends(get_db)
                 await manager.send_dict(json.dumps(data, cls=CustomJSONEncoder))
             else:
                 message = schemas.MessageBase(**data)
-                db_message = models.Message(
-                    chat_id=message.chat_id,
-                    sender_id=message.sender_id,
-                    parent_message_id=message.parent_message_id,
-                    timestamp=datetime.now(),
-                    message=message.message,
-                    seen=message.seen or False,
-                    is_file=message.is_file or False,
-                    created_at=datetime.now(),
-                    last_modified_at=datetime.now(),
-                )
-                db.add(db_message)
-                db.commit()
-                db.refresh(db_message)
+                db_message = add_new_message(message)
                 msg = schemas.Message.from_orm(db_message).dict()
                 await manager.send_dict(json.dumps(msg, cls=CustomJSONEncoder))
 
@@ -94,7 +105,7 @@ async def websocket_endpoint(websocket: WebSocket, db: Session = Depends(get_db)
 
 
 @router.websocket("/ws/calls")
-async def websocket_endpoint_calls(websocket: WebSocket, db: Session = Depends(get_db)):
+async def websocket_endpoint_calls(websocket: WebSocket):
     await manager.connect(websocket)
 
     try:

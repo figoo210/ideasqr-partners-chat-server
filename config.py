@@ -25,8 +25,8 @@ SQLALCHEMY_DATABASE_URL = f"mysql+pymysql://{os.environ.get('DB_USERNAME')}:{os.
 database = Database(SQLALCHEMY_DATABASE_URL)
 engine = create_engine(
     SQLALCHEMY_DATABASE_URL,
-    pool_size=50,           # Increase pool_size for more concurrent connections
-    max_overflow=20,        # Allow up to 10 connections above pool_size during bursts
+    pool_size=900,           # Increase pool_size for more concurrent connections
+    max_overflow=100,        # Allow up to 10 connections above pool_size during bursts
     pool_recycle=3600,      # Recycle connections every hour to avoid staleness
     # pool_pre_ping=True       # Enable pool_pre_ping to check and refresh connections
 )
