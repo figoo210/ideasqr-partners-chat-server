@@ -42,6 +42,10 @@ def create_chat(chat: schemas.ChatCreate, db: Session = Depends(get_db)):
 @router.get("/chats/", response_model=List[schemas.Chat])
 def get_chats(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
     chats = db.query(models.Chat).all()
+    # Iterate through chats to limit messages for each chat
+    for chat in chats:
+        chat.messages = db.query(models.Message).filter_by(chat_id=chat.chat_name).order_by(models.Message.created_at.desc()).limit(100).all()
+
     return chats
 
 
@@ -50,6 +54,7 @@ def get_chat(chat_name: str, db: Session = Depends(get_db)):
     chat = db.query(models.Chat).filter(models.Chat.chat_name == chat_name).first()
     if not chat:
         raise HTTPException(status_code=404, detail="Chat not found")
+    chat.messages = db.query(models.Message).filter_by(chat_id=chat.chat_name).order_by(models.Message.created_at.desc()).limit(100).all()
     return chat
 
 
