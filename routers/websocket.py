@@ -111,8 +111,11 @@ async def websocket_endpoint_calls(websocket: WebSocket):
     try:
         while True:
             data = await websocket.receive_json()
-            print("################################ Calls Data: ", data)
-            await manager.send_dict(json.dumps(data, cls=CustomJSONEncoder))
+            if data:
+                print("################################ Calls Data: ", data)
+                await manager.send_dict(json.dumps(data, cls=CustomJSONEncoder))
+            else:
+                print("################################ NO Calls")
 
     except WebSocketDisconnect:
         print("################### Calls DISCONNECT #####################")

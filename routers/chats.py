@@ -40,7 +40,7 @@ def create_chat(chat: schemas.ChatCreate, db: Session = Depends(get_db)):
 
 
 @router.get("/chats/", response_model=List[schemas.Chat])
-def get_chats(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
+def get_chats(db: Session = Depends(get_db)):
     chats = db.query(models.Chat).all()
     # Iterate through chats to limit messages for each chat
     for chat in chats:
