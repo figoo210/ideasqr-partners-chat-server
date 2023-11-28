@@ -28,7 +28,9 @@ def add_new_message(message):
         db.commit()
         db.refresh(db_message)
         db_message.reactions
-        return db_message
+        db_message.chat
+        db_chat = schemas.Chat.from_orm(db_message.chat).dict()
+        return db_message, db_chat
     finally:
         db.close()
 
@@ -94,8 +96,9 @@ async def websocket_endpoint(websocket: WebSocket):
                 await manager.send_dict(json.dumps(data, cls=CustomJSONEncoder))
             else:
                 message = schemas.MessageBase(**data)
-                db_message = add_new_message(message)
+                db_message, db_chat = add_new_message(message)
                 msg = schemas.Message.from_orm(db_message).dict()
+                msg["chat"] = db_chat
                 await manager.send_dict(json.dumps(msg, cls=CustomJSONEncoder))
 
     except WebSocketDisconnect:

@@ -174,6 +174,9 @@ class Chat(ChatBase):
     created_at: datetime
     last_modified_at: datetime
 
+    class Config:
+        from_attributes = True
+
 
 class UserUpdate(UserBase):
     password: Optional[str] = None

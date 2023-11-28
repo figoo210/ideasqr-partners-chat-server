@@ -1,5 +1,6 @@
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Request
 from sqlalchemy.orm import Session
+from sqlalchemy import or_
 from typing import List
 from datetime import datetime
 
@@ -42,10 +43,26 @@ def create_chat(chat: schemas.ChatCreate, db: Session = Depends(get_db)):
 @router.get("/chats/", response_model=List[schemas.Chat])
 def get_chats(db: Session = Depends(get_db)):
     chats = db.query(models.Chat).all()
-    # Iterate through chats to limit messages for each chat
-    for chat in chats:
-        chat.messages = db.query(models.Message).filter_by(chat_id=chat.chat_name).order_by(models.Message.created_at.desc()).limit(100).all()
+    return chats
 
+
+@router.get("/group-chats/", response_model=List[schemas.Chat])
+def get_group_chats(request: Request, db: Session = Depends(get_db)):
+    user_id = request.headers.get("user_id")
+    chats = db.query(models.Chat).filter(
+        models.Chat.is_group == True,
+        models.Chat.chat_members.any(models.ChatMember.user_id == user_id)
+    ).all()
+    return chats
+
+
+@router.get("/direct-chats/", response_model=List[schemas.Chat])
+def get_direct_chats(request: Request, db: Session = Depends(get_db)):
+    user_id = request.headers.get("user_id")
+    chats = db.query(models.Chat).filter(
+        models.Chat.is_group == False,
+        or_(models.Chat.chat_name.like(f"%-{user_id}-%"), models.Chat.chat_name.like(f"%-{user_id}"))
+    ).all()
     return chats
 
 
