@@ -12,7 +12,20 @@ router = APIRouter()
 
 def add_new_message(message):
     db = SessionLocal()
+    chat_sequance = 1
+
+    last_message = (
+        db.query(models.Message)
+        .filter(models.Message.chat_id == message.chat_id)
+        .order_by(models.Message.created_at.desc())
+        .first()
+    )
+
+    if last_message:
+        chat_sequance = last_message.chat_sequance + 1
+
     db_message = models.Message(
+        chat_sequance=chat_sequance,
         chat_id=message.chat_id,
         sender_id=message.sender_id,
         parent_message_id=message.parent_message_id,
@@ -33,7 +46,6 @@ def add_new_message(message):
         return db_message, db_chat
     finally:
         db.close()
-
 
 
 class CustomJSONEncoder(json.JSONEncoder):
@@ -76,51 +88,22 @@ class ConnectionManager:
 manager = ConnectionManager()
 
 
-@router.websocket("/ws/chats")
+@router.websocket("/ws")
 async def websocket_endpoint(websocket: WebSocket):
     await manager.connect(websocket)
 
     try:
         while True:
             data = await websocket.receive_json()
-            print("################################ Chats Data: ", data)
-            if "reaction" in data:
-                await manager.send_dict(json.dumps({"reaction": data["reaction"], "chat_id": data["chat_id"]}, cls=CustomJSONEncoder))
-            elif "edit" in data:
-                response = {
-                    **data["edit"],
-                    "edit": "edit"
-                }
-                await manager.send_dict(json.dumps(response, cls=CustomJSONEncoder))
-            elif "update_chat_members" in data:
+            print("################################ WebSocket Data: ", data)
+
+            if "type" in data:
                 await manager.send_dict(json.dumps(data, cls=CustomJSONEncoder))
+
             else:
-                message = schemas.MessageBase(**data)
-                db_message, db_chat = add_new_message(message)
-                msg = schemas.Message.from_orm(db_message).dict()
-                msg["chat"] = db_chat
-                await manager.send_dict(json.dumps(msg, cls=CustomJSONEncoder))
+                print("################################ NO TYPE")
 
     except WebSocketDisconnect:
-        print("################### Chats DISCONNECT #####################")
-        manager.disconnect(websocket)
-        # await manager.broadcast(json.dumps(message))
-
-
-@router.websocket("/ws/calls")
-async def websocket_endpoint_calls(websocket: WebSocket):
-    await manager.connect(websocket)
-
-    try:
-        while True:
-            data = await websocket.receive_json()
-            if data:
-                print("################################ Calls Data: ", data)
-                await manager.send_dict(json.dumps(data, cls=CustomJSONEncoder))
-            else:
-                print("################################ NO Calls")
-
-    except WebSocketDisconnect:
-        print("################### Calls DISCONNECT #####################")
+        print("################### WEBSOCKET DISCONNECT #####################")
         manager.disconnect(websocket)
         # await manager.broadcast(json.dumps(message))

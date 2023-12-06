@@ -1,4 +1,4 @@
-from sqlalchemy import Boolean, Column, String, Integer, ForeignKey, DateTime
+from sqlalchemy import Boolean, Column, String, Integer, ForeignKey, DateTime, Index
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
 from config import Base
@@ -32,14 +32,16 @@ class User(Base, ModelActions):
     messages = relationship("Message", back_populates="sender")
     message_reactions = relationship("MessageReaction", back_populates="user")
     ip_group = relationship("IPGroup", back_populates="users")
-    reply_shortcuts = relationship("ReplyShortcut", back_populates="user", cascade="all, delete-orphan")
+    reply_shortcuts = relationship(
+        "ReplyShortcut", back_populates="user", cascade="all, delete-orphan"
+    )
 
 
 # IP Group model
 class IPGroup(Base, ModelActions):
     __tablename__ = "ip_groups"
 
-    ip = Column(String(length=20), primary_key=True)
+    ip = Column(String(length=20), primary_key=True, index=True)
     name = Column(String(length=50))
 
     users = relationship("User", back_populates="ip_group")
@@ -71,9 +73,14 @@ class Permission(Base, ModelActions):
 class RolePermission(Base, ModelActions):
     __tablename__ = "role_permissions"
 
-    role = Column(String(length=50), ForeignKey("roles.role"), primary_key=True)
+    role = Column(
+        String(length=50), ForeignKey("roles.role"), primary_key=True, index=True
+    )
     permission = Column(
-        String(length=50), ForeignKey("permissions.permission"), primary_key=True
+        String(length=50),
+        ForeignKey("permissions.permission"),
+        primary_key=True,
+        index=True,
     )
 
 
@@ -94,8 +101,10 @@ class ChatMember(Base, ModelActions):
     __tablename__ = "chat_members"
 
     id = Column(Integer, primary_key=True, index=True)
-    chat_id = Column(String(length=50), ForeignKey("chats.chat_name"), nullable=False)
-    user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
+    chat_id = Column(
+        String(length=50), ForeignKey("chats.chat_name"), nullable=False, index=True
+    )
+    user_id = Column(Integer, ForeignKey("users.id"), nullable=False, index=True)
     joined_at = Column(DateTime, default=func.now())
     last_modified_at = Column(DateTime, default=func.now(), onupdate=func.now())
 
@@ -107,14 +116,17 @@ class Message(Base, ModelActions):
     __tablename__ = "messages"
 
     id = Column(Integer, primary_key=True, index=True)
+    chat_sequance = Column(Integer, index=True)
     parent_message_id = Column(Integer, nullable=True, default=0)
-    chat_id = Column(String(length=50), ForeignKey("chats.chat_name"), nullable=False)
-    sender_id = Column(Integer, ForeignKey("users.id"), nullable=False)
+    chat_id = Column(
+        String(length=50), ForeignKey("chats.chat_name"), nullable=False, index=True
+    )
+    sender_id = Column(Integer, ForeignKey("users.id"), nullable=False, index=True)
     timestamp = Column(DateTime, default=func.now())
     message = Column(String(length=5000))
     seen = Column(Boolean, default=False)
     is_file = Column(Boolean, default=False)
-    created_at = Column(DateTime, default=func.now())
+    created_at = Column(DateTime, default=func.now(), index=True)
     last_modified_at = Column(DateTime, default=func.now(), onupdate=func.now())
 
     chat = relationship("Chat", back_populates="messages")
@@ -126,8 +138,8 @@ class MessageReaction(Base, ModelActions):
     __tablename__ = "message_reactions"
 
     id = Column(Integer, primary_key=True, index=True)
-    message_id = Column(Integer, ForeignKey("messages.id"), nullable=False)
-    user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
+    message_id = Column(Integer, ForeignKey("messages.id"), nullable=False, index=True)
+    user_id = Column(Integer, ForeignKey("users.id"), nullable=False, index=True)
     reaction = Column(String(length=50))
     created_at = Column(DateTime, default=func.now())
     last_modified_at = Column(DateTime, default=func.now(), onupdate=func.now())
@@ -142,8 +154,7 @@ class ReplyShortcut(Base):
     id = Column(Integer, primary_key=True, index=True)
     shortcut = Column(String(255), index=True)
     reply = Column(String(length=5000), nullable=True)
-    user_id = Column(Integer, ForeignKey("users.id"))
+    user_id = Column(Integer, ForeignKey("users.id"), index=True)
 
     # Define a relationship with the User model
     user = relationship("User", back_populates="reply_shortcuts")
-

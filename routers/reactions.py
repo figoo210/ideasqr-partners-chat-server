@@ -11,21 +11,35 @@ router = APIRouter()
 # Message Reaction Endpoints
 
 
-@router.post("/message_reactions/", response_model=schemas.MessageReaction)
+@router.post("/message_reactions/")
 def create_message_reaction(
     reaction: schemas.MessageReactionCreate, db: Session = Depends(get_db)
 ):
-    db_reaction = models.MessageReaction(
-        message_id=reaction.message_id,
-        user_id=reaction.user_id,
-        reaction=reaction.reaction,
-        created_at=datetime.now(),
-        last_modified_at=datetime.now(),
+    user_reaction = (
+        db.query(models.MessageReaction)
+        .filter(
+            models.MessageReaction.message_id == reaction.message_id,
+            models.MessageReaction.user_id == reaction.user_id,
+        )
+        .first()
     )
-    db.add(db_reaction)
-    db.commit()
-    db.refresh(db_reaction)
-    return db_reaction
+    if user_reaction:
+        user_reaction.reaction = reaction.reaction
+        user_reaction.last_modified_at = datetime.now()
+        db.commit()
+        db.refresh(user_reaction)
+    else:
+        db_reaction = models.MessageReaction(
+            message_id=reaction.message_id,
+            user_id=reaction.user_id,
+            reaction=reaction.reaction,
+            created_at=datetime.now(),
+            last_modified_at=datetime.now(),
+        )
+        db.add(db_reaction)
+        db.commit()
+        db.refresh(db_reaction)
+    return "Reaction Added"
 
 
 @router.get("/message_reactions/", response_model=List[schemas.MessageReaction])
