@@ -26,6 +26,7 @@ def create_message(message: schemas.MessageBase, db: Session = Depends(get_db)):
         chat_sequance = last_message.chat_sequance + 1
 
     db_message = models.Message(
+        id=message.id,
         chat_sequance=chat_sequance,
         chat_id=message.chat_id,
         sender_id=message.sender_id,
@@ -59,7 +60,7 @@ def get_message(chat_id: str, db: Session = Depends(get_db)):
 
 @router.put("/messages/{message_id}", response_model=schemas.Message)
 def update_message(
-    message_id: int, message: schemas.MessageUpdate, db: Session = Depends(get_db)
+    message_id: str, message: schemas.MessageUpdate, db: Session = Depends(get_db)
 ):
     db_message = (
         db.query(models.Message).filter(models.Message.id == message_id).first()
@@ -79,7 +80,7 @@ def update_message(
 
 
 @router.delete("/messages/{message_id}")
-def delete_message(message_id: int, db: Session = Depends(get_db)):
+def delete_message(message_id: str, db: Session = Depends(get_db)):
     db_message = (
         db.query(models.Message).filter(models.Message.id == message_id).first()
     )
@@ -91,7 +92,7 @@ def delete_message(message_id: int, db: Session = Depends(get_db)):
 
 
 @router.get("/messages/{message_id}")
-def seen_message(message_id: int, db: Session = Depends(get_db)):
+def seen_message(message_id: str, db: Session = Depends(get_db)):
     db_message = (
         db.query(models.Message).filter(models.Message.id == message_id).first()
     )

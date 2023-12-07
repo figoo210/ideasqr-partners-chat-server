@@ -3,7 +3,6 @@ from pydantic import BaseModel
 from datetime import datetime
 
 
-
 class ReplyShortcut(BaseModel):
     id: Optional[int] = None
     shortcut: Optional[str] = None
@@ -129,9 +128,12 @@ class ChatMembersResponse(BaseModel):
 
 
 class MessageBase(BaseModel):
+    id: Optional[str] = None
     chat_id: str
     sender_id: int
-    parent_message_id: Optional[int] = None
+    chat_sequance: Optional[int] = None
+    parent_message_id: Optional[str] = None
+    type: Optional[str] = None
     timestamp: Optional[datetime] = None
     message: str
     seen: Optional[bool] = None
@@ -139,7 +141,7 @@ class MessageBase(BaseModel):
 
 
 class MessageReactionBase(BaseModel):
-    message_id: int
+    message_id: str
     user_id: int
     reaction: str
 
@@ -158,7 +160,6 @@ class MessageReaction(MessageReactionBase):
 
 
 class Message(MessageBase):
-    id: int
     created_at: datetime
     last_modified_at: datetime
     reactions: Optional[List[MessageReaction]]

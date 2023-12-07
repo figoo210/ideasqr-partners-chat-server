@@ -1,4 +1,4 @@
-from sqlalchemy import Boolean, Column, String, Integer, ForeignKey, DateTime, Index
+from sqlalchemy import Boolean, Column, String, Integer, ForeignKey, DateTime
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
 from config import Base
@@ -115,9 +115,9 @@ class ChatMember(Base, ModelActions):
 class Message(Base, ModelActions):
     __tablename__ = "messages"
 
-    id = Column(Integer, primary_key=True, index=True)
+    id = Column(String(length=64), primary_key=True, index=True)
     chat_sequance = Column(Integer, index=True)
-    parent_message_id = Column(Integer, nullable=True, default=0)
+    parent_message_id = Column(String(length=64), nullable=True, default=0)
     chat_id = Column(
         String(length=50), ForeignKey("chats.chat_name"), nullable=False, index=True
     )
@@ -138,7 +138,7 @@ class MessageReaction(Base, ModelActions):
     __tablename__ = "message_reactions"
 
     id = Column(Integer, primary_key=True, index=True)
-    message_id = Column(Integer, ForeignKey("messages.id"), nullable=False, index=True)
+    message_id = Column(String(length=64), ForeignKey("messages.id"), nullable=False, index=True)
     user_id = Column(Integer, ForeignKey("users.id"), nullable=False, index=True)
     reaction = Column(String(length=50))
     created_at = Column(DateTime, default=func.now())

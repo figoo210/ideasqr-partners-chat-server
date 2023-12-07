@@ -53,7 +53,7 @@ def get_message_reactions(
 @router.get(
     "/message_reactions/{message_id}", response_model=List[schemas.MessageReaction]
 )
-def get_message_reaction(message_id: int, db: Session = Depends(get_db)):
+def get_message_reaction(message_id: str, db: Session = Depends(get_db)):
     reaction = (
         db.query(models.MessageReaction)
         .filter(models.MessageReaction.id == message_id)
