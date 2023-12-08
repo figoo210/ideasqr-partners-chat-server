@@ -122,6 +122,10 @@ class ChatMemberResponse(BaseModel):
     joined_at: Optional[datetime]
     last_modified_at: Optional[datetime]
 
+    class Config:
+        from_attributes = True
+
+
 
 class ChatMembersResponse(BaseModel):
     chat_members: List[ChatMemberResponse]
