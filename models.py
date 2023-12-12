@@ -88,7 +88,7 @@ class Chat(Base, ModelActions):
     __tablename__ = "chats"
 
     chat_name = Column(String(length=50), primary_key=True, index=True)
-    image_url = Column(String(length=200), nullable=True)
+    image_url = Column(String(length=2000), nullable=True)
     is_group = Column(Boolean, default=False)
     created_at = Column(DateTime, default=func.now())
     last_modified_at = Column(DateTime, default=func.now(), onupdate=func.now())

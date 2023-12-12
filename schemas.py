@@ -142,6 +142,7 @@ class MessageBase(BaseModel):
     message: str
     seen: Optional[bool] = None
     is_file: Optional[bool] = None
+    created_at: Optional[datetime] = None
 
 
 class MessageReactionBase(BaseModel):

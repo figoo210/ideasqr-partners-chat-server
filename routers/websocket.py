@@ -10,44 +10,6 @@ import models, schemas
 router = APIRouter()
 
 
-def add_new_message(message):
-    db = SessionLocal()
-    chat_sequance = 1
-
-    last_message = (
-        db.query(models.Message)
-        .filter(models.Message.chat_id == message.chat_id)
-        .order_by(models.Message.created_at.desc())
-        .first()
-    )
-
-    if last_message:
-        chat_sequance = last_message.chat_sequance + 1
-
-    db_message = models.Message(
-        chat_sequance=chat_sequance,
-        chat_id=message.chat_id,
-        sender_id=message.sender_id,
-        parent_message_id=message.parent_message_id,
-        timestamp=datetime.now(),
-        message=message.message,
-        seen=message.seen or False,
-        is_file=message.is_file or False,
-        created_at=datetime.now(),
-        last_modified_at=datetime.now(),
-    )
-    try:
-        db.add(db_message)
-        db.commit()
-        db.refresh(db_message)
-        db_message.reactions
-        db_message.chat
-        db_chat = schemas.Chat.from_orm(db_message.chat).dict()
-        return db_message, db_chat
-    finally:
-        db.close()
-
-
 class CustomJSONEncoder(json.JSONEncoder):
     def default(self, obj):
         if isinstance(obj, datetime):

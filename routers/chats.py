@@ -75,6 +75,15 @@ def get_chat(chat_name: str, db: Session = Depends(get_db)):
     return chat
 
 
+@router.get("/chats/check/{chat_name}")
+def check_group_name(chat_name: str, db: Session = Depends(get_db)):
+    chat = db.query(models.Chat).filter(models.Chat.chat_name == chat_name).first()
+    if not chat:
+        return {"is_exist": False}
+    else:
+        return {"is_exist": True}
+
+
 @router.put("/chats/{chat_name}", response_model=schemas.Chat)
 def update_chat(
     chat_name: str, chat: schemas.ChatUpdate, db: Session = Depends(get_db)
