@@ -13,21 +13,21 @@ router = APIRouter()
 
 @router.post("/messages/", response_model=schemas.Message)
 def create_message(message: schemas.MessageBase, db: Session = Depends(get_db)):
-    chat_sequance = 1
+    # chat_sequance = 1
 
-    last_message = (
-        db.query(models.Message)
-        .filter(models.Message.chat_id == message.chat_id)
-        .order_by(models.Message.created_at.desc())
-        .first()
-    )
+    # last_message = (
+    #     db.query(models.Message)
+    #     .filter(models.Message.chat_id == message.chat_id)
+    #     .order_by(models.Message.created_at.desc())
+    #     .first()
+    # )
 
-    if last_message:
-        chat_sequance = last_message.chat_sequance + 1
+    # # if last_message:
+    # #     chat_sequance = last_message.chat_sequance + 1
 
     db_message = models.Message(
         id=message.id,
-        chat_sequance=chat_sequance,
+        chat_sequance=1,
         chat_id=message.chat_id,
         sender_id=message.sender_id,
         parent_message_id=message.parent_message_id,
