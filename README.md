@@ -1,4 +1,4 @@
-# Private and Inside Chat Backend for Company
+# Partners Chat Backend
 
 This repository contains the backend code for a private and inside chat application designed for company use. The backend is built with FastAPI and integrates various dependencies to provide secure and efficient communication within the company's network.
 
