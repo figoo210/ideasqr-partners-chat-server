@@ -22,8 +22,8 @@ class User(Base, ModelActions):
     image_url = Column(String(length=2000), nullable=True)
     role_name = Column(String(length=50), ForeignKey("roles.role"), nullable=False)
     disabled = Column(Boolean, default=False)
-    created_at = Column(DateTime, default=func.now())
-    last_modified_at = Column(DateTime, default=func.now(), onupdate=func.now())
+    created_at = Column(DateTime, default=func.now(6))
+    last_modified_at = Column(DateTime, default=func.now(6), onupdate=func.now(6))
     last_login = Column(DateTime)
     ip_group_id = Column(String(length=20), ForeignKey("ip_groups.ip"))
 
@@ -51,8 +51,8 @@ class Role(Base, ModelActions):
     __tablename__ = "roles"
 
     role = Column(String(length=50), primary_key=True, index=True)
-    created_at = Column(DateTime, default=func.now())
-    last_modified_at = Column(DateTime, default=func.now(), onupdate=func.now())
+    created_at = Column(DateTime, default=func.now(6))
+    last_modified_at = Column(DateTime, default=func.now(6), onupdate=func.now(6))
 
     users = relationship("User", back_populates="role")
     permissions = relationship(
@@ -64,8 +64,8 @@ class Permission(Base, ModelActions):
     __tablename__ = "permissions"
 
     permission = Column(String(length=50), primary_key=True, index=True)
-    created_at = Column(DateTime, default=func.now())
-    last_modified_at = Column(DateTime, default=func.now(), onupdate=func.now())
+    created_at = Column(DateTime, default=func.now(6))
+    last_modified_at = Column(DateTime, default=func.now(6), onupdate=func.now(6))
 
     roles = relationship("Role", secondary="role_permissions", viewonly=True)
 
@@ -90,8 +90,8 @@ class Chat(Base, ModelActions):
     chat_name = Column(String(length=50), primary_key=True, index=True)
     image_url = Column(String(length=2000), nullable=True)
     is_group = Column(Boolean, default=False)
-    created_at = Column(DateTime, default=func.now())
-    last_modified_at = Column(DateTime, default=func.now(), onupdate=func.now())
+    created_at = Column(DateTime, default=func.now(6))
+    last_modified_at = Column(DateTime, default=func.now(6), onupdate=func.now(6))
 
     messages = relationship("Message", back_populates="chat")
     chat_members = relationship("ChatMember", back_populates="chat", viewonly=True)
@@ -105,8 +105,8 @@ class ChatMember(Base, ModelActions):
         String(length=50), ForeignKey("chats.chat_name"), nullable=False, index=True
     )
     user_id = Column(Integer, ForeignKey("users.id"), nullable=False, index=True)
-    joined_at = Column(DateTime, default=func.now())
-    last_modified_at = Column(DateTime, default=func.now(), onupdate=func.now())
+    joined_at = Column(DateTime, default=func.now(6))
+    last_modified_at = Column(DateTime, default=func.now(6), onupdate=func.now(6))
 
     chat = relationship("Chat", backref="members")
     user = relationship("User", backref="chats")
@@ -122,12 +122,12 @@ class Message(Base, ModelActions):
         String(length=50), ForeignKey("chats.chat_name"), nullable=False, index=True
     )
     sender_id = Column(Integer, ForeignKey("users.id"), nullable=False, index=True)
-    timestamp = Column(DateTime, default=func.now())
+    timestamp = Column(DateTime, default=func.now(6))
     message = Column(String(length=5000))
     seen = Column(Boolean, default=False)
     is_file = Column(Boolean, default=False)
-    created_at = Column(DateTime, default=func.now(), index=True)
-    last_modified_at = Column(DateTime, default=func.now(), onupdate=func.now())
+    created_at = Column(DateTime, default=func.now(6), index=True)
+    last_modified_at = Column(DateTime, default=func.now(6), onupdate=func.now(6))
 
     chat = relationship("Chat", back_populates="messages")
     sender = relationship("User", back_populates="messages")
@@ -141,8 +141,8 @@ class MessageReaction(Base, ModelActions):
     message_id = Column(String(length=64), ForeignKey("messages.id"), nullable=False, index=True)
     user_id = Column(Integer, ForeignKey("users.id"), nullable=False, index=True)
     reaction = Column(String(length=50))
-    created_at = Column(DateTime, default=func.now())
-    last_modified_at = Column(DateTime, default=func.now(), onupdate=func.now())
+    created_at = Column(DateTime, default=func.now(6))
+    last_modified_at = Column(DateTime, default=func.now(6), onupdate=func.now(6))
 
     message = relationship("Message", back_populates="reactions")
     user = relationship("User", back_populates="message_reactions")
