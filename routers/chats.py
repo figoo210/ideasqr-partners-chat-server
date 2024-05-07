@@ -18,6 +18,7 @@ def create_chat(chat: schemas.ChatCreate, db: Session = Depends(get_db)):
         chat_name=chat.chat_name,
         image_url=chat.image_url,
         is_group=chat.is_group,
+        is_deleted=False,
         created_at=datetime.now(),
         last_modified_at=datetime.now(),
     )
@@ -51,6 +52,7 @@ def get_group_chats(request: Request, db: Session = Depends(get_db)):
     user_id = request.headers.get("user_id")
     chats = db.query(models.Chat).filter(
         models.Chat.is_group == True,
+        models.Chat.is_deleted == False,
         models.Chat.chat_members.any(models.ChatMember.user_id == user_id)
     ).all()
     return chats
@@ -61,6 +63,7 @@ def get_direct_chats(request: Request, db: Session = Depends(get_db)):
     user_id = request.headers.get("user_id")
     chats = db.query(models.Chat).filter(
         models.Chat.is_group == False,
+        models.Chat.is_deleted == False,
         or_(models.Chat.chat_name.like(f"%-{user_id}-%"), models.Chat.chat_name.like(f"%-{user_id}"))
     ).all()
     return chats
@@ -105,8 +108,10 @@ def delete_chat(chat_name: str, db: Session = Depends(get_db)):
     db_chat = db.query(models.Chat).filter(models.Chat.chat_name == chat_name).first()
     if not db_chat:
         raise HTTPException(status_code=404, detail="Chat not found")
-    db.delete(db_chat)
+    # db.delete(db_chat)
+    db_chat.is_deleted = True
     db.commit()
+    db.refresh(db_chat)
     return {"message": "Chat deleted"}
 
 

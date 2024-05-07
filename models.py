@@ -90,6 +90,7 @@ class Chat(Base, ModelActions):
     chat_name = Column(String(length=50), primary_key=True, index=True)
     image_url = Column(String(length=2000), nullable=True)
     is_group = Column(Boolean, default=False)
+    is_deleted = Column(Boolean, default=False)
     created_at = Column(DateTime, default=func.now(6))
     last_modified_at = Column(DateTime, default=func.now(6), onupdate=func.now(6))
 
