@@ -124,6 +124,7 @@ def update_user(user_id: int, user: schemas.UserUpdate, db: Session = Depends(ge
     db_user.last_modified_at = datetime.now()
     db.commit()
     db.refresh(db_user)
+
     return db_user
 
 
