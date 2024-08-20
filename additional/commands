@@ -1,0 +1,28 @@
+pm2 start npm --name "devStart" -- start
+pm2 stop "devStart"
+pm2 list
+nohup python3 main.py > output.log &
+
+CADDY
+
+
+chat.altajer.org {
+	# tls /etc/ssl/certs/certificate.pem /etc/ssl/private/key.pem
+
+	# reverse proxy:
+	reverse_proxy localhost:3000
+}
+
+chatserver.altajer.org {
+	# tls /etc/ssl/certs/certificate.pem /etc/ssl/private/key.pem
+
+	# reverse proxy:
+	reverse_proxy localhost:8000
+}
+
+jetserver.altajer.org {
+	# tls /etc/ssl/certs/certificate.pem /etc/ssl/private/key.pem
+
+	# reverse proxy:
+	reverse_proxy localhost:8001
+}
